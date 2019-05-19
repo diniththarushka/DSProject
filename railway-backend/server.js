@@ -26,6 +26,28 @@ const connection = mongoose.connection;
 connection.once('open', function() {
     console.log("MongoDB database connection established successfully");
 
+    //Hardcoded values are here (Defaults)
+    mongoose.connection.db.collection('specials').countDocuments(function(err, count) {
+        if (err){
+            console.log(err);
+        }
+        if( count === 0) {
+            let DiscountIns = new special({'Discount':0.2});
+            DiscountIns.save();
+        }
+    });
+    mongoose.connection.db.collection('regusers').countDocuments(function(err, count) {
+        if (err){
+            console.log(err);
+        }
+        if( count === 0) {
+            let adminDefault = new RegUser(
+                {'Type':'Admin',
+                 'Email':'admin@admin.com',
+                 'Password':'92668751'});
+            adminDefault.save();
+        }
+    });
 });
 
 //==============================================User App Routes=================================================
@@ -366,6 +388,7 @@ discountAppRoutes.route('/').get(function(req, res) {
 });
 
 discountAppRoutes.route('/add').post(function(req,res){
+
     let DiscountIns = new special(req.body);
     DiscountIns.save()
         .then(ticket => {
@@ -386,6 +409,20 @@ discountAppRoutes.route('/update/:id').post(function(req,res){
         }
     });
 });
+
+discountAppRoutes.route('/:id').delete(function (req,res) {
+    let id = req.params.id;
+    special.findById(id, function(err,special){
+        if(err){
+            console.log(err);
+        }else{
+            special.remove();
+            res.json(special);
+        }
+
+    });
+});
+
 //==============================================Discount App Routes=================================================
 
 app.use('/users', userAppRoutes);
